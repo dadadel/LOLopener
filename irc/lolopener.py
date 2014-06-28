@@ -3,7 +3,8 @@ from pyircibot import PyIrciBot
 
 
 class LolOpenerIrcBot(object):
-    '''LOLOpener IRC bot
+    '''LOLOpener IRC bot. This class should be provided
+    to PyIrciBot (https://github.com/dadadel/pyircibot)
     '''
 
     def __init__(self, nick=None, channel=None):
