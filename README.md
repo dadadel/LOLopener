@@ -1,10 +1,11 @@
 LOLopener
 =========
 
-This repo contains the main part of tools used to manage and inform about the LOL opening.
-
-You'll find the IRC part [there](https://github.com/dadadel/LOLopener/tree/master/irc).
+This repo contains the tools used to manage and inform about the LOL opening status.
 
 LOL is the Lyon Open Lab hackerspace from Lyon, France.
 
-The APIs in this development should tries to respect the spaceAPI specifications (http://spaceapi.net/).
+You'll find the IRC bot [there](https://github.com/dadadel/LOLopener/tree/master/irc).
+
+
+The APIs in this development should try to respect, as possible, the spaceAPI specifications (http://spaceapi.net/).
