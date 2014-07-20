@@ -14,11 +14,9 @@
 
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/device.h>
 #include <linux/ioport.h>
 #include <asm/io.h>
-
-MODULE_AUTHOR ("A. Daouzli");
-MODULE_LICENSE("GPL");
 
 /* CONSTANTS */
 
@@ -42,6 +40,15 @@ MODULE_LICENSE("GPL");
 #define lol_alert(__MSG, ...)  pr_alert("%s: " __MSG, LOL_DRIVER_NAME, ## __VA_ARGS__) 
 #define lol_err(__MSG, ...)  pr_err("%s - l.%d: " __MSG, LOL_DRIVER_NAME, __LINE__, ## __VA_ARGS__) 
 
+/* FUNCTIONS PROTOTYPES */
+
+int lol_setup_gpio(int gpio, int mode);
+int lol_set_gpio(int gpio, int value);
+int lol_get_gpio(int gpio);
+
+static ssize_t lol_sysfs_store(struct class *cls, struct class_attribute *attr, const char *buf, size_t count);
+static ssize_t lol_sysfs_show(struct class *cls, struct class_attribute *attr, char *buf);
+
 /* TYPES DEFINITIONS */
 
 struct reg_gpio 
@@ -62,15 +69,24 @@ struct reg_gpio
     unsigned int reserved7;
 }; 
 
+static struct class_attribute lol_sysfs_class_attrs[] = {
+    __ATTR(gpio4, 0666, lol_sysfs_show, lol_sysfs_store),
+    __ATTR(gpio7, 0666, lol_sysfs_show, lol_sysfs_store),
+    __ATTR(gpio8, 0666, lol_sysfs_show, lol_sysfs_store),
+    __ATTR(gpio9, 0666, lol_sysfs_show, lol_sysfs_store),
+    __ATTR(gpio11, 0666, lol_sysfs_show, lol_sysfs_store),
+    __ATTR_NULL
+};
+
+struct class lol_class = {
+    .name        = "lol_sysfs",
+    .owner       = THIS_MODULE,
+    .class_attrs = lol_sysfs_class_attrs,
+};
+
 /* GLOBAL VARIABLES */
 
 struct reg_gpio *mgpio = NULL;
-
-/* FUNCTIONS PROTOTYPES */
-
-int lol_setup_gpio(int gpio, int mode);
-int lol_set_gpio(int gpio, int value);
-int lol_get_gpio(int gpio);
 
 /* MODULE CODE */
 
@@ -158,11 +174,72 @@ int lol_get_gpio(int gpio)
 }
 
 /**
+ * User request to set a GPIO (write sysfs file).
+ *
+ * \param attr[in] corresponds to the attribute to set
+ * \param buf[in] contains the value to set
+ * \return GPIO value (0 or 1)
+ * \retval -1 error
+ **/
+static ssize_t lol_sysfs_store(struct class *cls, struct class_attribute *attr, const char *buf, size_t count)
+{
+    long int value, gpio;
+    int ret;
+    ret = kstrtol(buf,10, &value);
+    if (ret != 0)
+    {
+        lol_err("failed to extract number from '%s'\n", buf);
+        return -1;
+    }
+    /* attr.name is expected to be format as "gpio%d" */
+    ret = kstrtol(attr->attr.name + 4, 10, &gpio);
+    if (ret != 0)
+    {
+        lol_err("failed to extract number from %s\n", attr->attr.name);
+        return -1;
+    }
+    lol_alert("set GPIO %d to %d\n", (int)gpio, (int)value);
+    lol_set_gpio((int)gpio, (int)value);
+    return count;
+}
+
+/**
+ * User request reading a GPIO value (read sysfs file).
+ *
+ * \param attr[in] corresponds to the attribute to get
+ * \param buf[out] will contain the read value
+ * \return GPIO value (0 or 1)
+ * \retval -1 error
+ **/
+static ssize_t lol_sysfs_show(struct class *cls, struct class_attribute *attr, char *buf)
+{
+    int ret;
+    long int gpio;
+    /* attr.name is expected to be format as "gpio%d" */
+    ret = kstrtol(attr->attr.name + 4, 10, &gpio);
+    if (ret != 0)
+    {   
+        lol_err("failed to extract number from %s\n", attr->attr.name);
+        return -1;
+    }
+    ret = lol_get_gpio((int)gpio);
+    if (ret < 0)
+    {
+        lol_err("Failed to retrieve the GPIO value\n");
+        return -1;
+    }
+    return snprintf(buf, PAGE_SIZE, "%d\n", ret);
+}
+
+/**
  * Init module function
  **/
 int lol_gpio_init(void)
 {
     lol_alert("%s - version %s\n", LOL_DRIVER_NAME, LOL_DRIVER_VERSION);
+
+    /* Map the GPIOs */
+
     if (request_mem_region(GPIO_BASE_ADDRESS, sizeof(struct reg_gpio), LOL_DRIVER_NAME) == NULL)
     {
         lol_err("Failed to reserve the memory region\n");
@@ -175,19 +252,27 @@ int lol_gpio_init(void)
         lol_err("Failed to release the reserved memory region\n");
         return -1;
     }
+
+    /* Configure the GPIOs directions */
+
     lol_setup_gpio(4, INPUT_MODE);
     lol_setup_gpio(7, OUTPUT_MODE);
     lol_setup_gpio(8, OUTPUT_MODE);
     lol_setup_gpio(9, OUTPUT_MODE);
     lol_setup_gpio(11, OUTPUT_MODE);
-    lol_set_gpio(7, 1);
-    lol_set_gpio(9, 1);
-    lol_alert("work is done!\n");
+
+    /* initializes the SYSFS  */
+
+    class_register(&lol_class);
+
+    lol_alert("GPIOs ready to be used\n");
+
     return 0;
 }
 
 void lol_gpio_exit(void)
 {
+    class_unregister(&lol_class);
     lol_set_gpio(7, 0);
     lol_set_gpio(9, 0);
     iounmap(mgpio);
@@ -197,4 +282,7 @@ void lol_gpio_exit(void)
 
 module_init(lol_gpio_init);
 module_exit(lol_gpio_exit);
+
+MODULE_AUTHOR ("A. Daouzli");
+MODULE_LICENSE("GPL");
 
