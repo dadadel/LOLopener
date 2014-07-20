@@ -14,4 +14,4 @@ users).
 
 A file ``gpioX`` is a text file and should contains ``0`` or ``1`` representing
 the GPIO status. The user can read it or write it, in the second case the GPIO
-will be set.
+will be set. This work like with ``/sys/class/gpio/*/value`` files.
