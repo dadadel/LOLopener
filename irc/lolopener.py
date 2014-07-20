@@ -45,9 +45,20 @@ class LolOpenerIrcBot(object):
         return 'Le LOLcal {}'.format('est ouvert !' if self.is_open else "n'est pas ouvert !")
 
     def timeout_function(self):
-        # read GPIO status
-        # if changed status announce it to the channel
-        # self.is_open
+        '''Check the GPIO status to detect Opening change, so inform the chan.
+        '''
+        changed = False
+        with open("/sys/class/lol_gpio/gpio4", "r") as f:
+            gpio = int(f.read())
+            # Note that the status is inverted: 0 open/1 close
+            if gpio == 1 and self.is_open:
+                self.is_open = False
+                changed = True
+            elif gpio == 0 and not self.is_open:
+                self.is_open = True
+                changed = True
+        if changed:
+            return {'cmd': {'message': self.open_message()}}
         return None
 
     def parse_message(self, message, source, target):
