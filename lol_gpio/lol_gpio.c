@@ -79,7 +79,7 @@ static struct class_attribute lol_sysfs_class_attrs[] = {
 };
 
 struct class lol_class = {
-    .name        = "lol_sysfs",
+    .name        = "lol_gpio",
     .owner       = THIS_MODULE,
     .class_attrs = lol_sysfs_class_attrs,
 };
