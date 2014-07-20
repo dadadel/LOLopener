@@ -273,8 +273,6 @@ int lol_gpio_init(void)
 void lol_gpio_exit(void)
 {
     class_unregister(&lol_class);
-    lol_set_gpio(7, 0);
-    lol_set_gpio(9, 0);
     iounmap(mgpio);
     release_mem_region(GPIO_BASE_ADDRESS, sizeof(struct reg_gpio));
     lol_alert("Module released!\n");
