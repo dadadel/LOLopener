@@ -58,6 +58,17 @@ class LolOpenerIrcBot(object):
                 self.is_open = True
                 changed = True
         if changed:
+            with open("/sys/class/lol_gpio/gpio11", "w") as f:#red
+                if self.is_open:
+                    f.write("0")
+                else:
+                    f.write("1")
+            with open("/sys/class/lol_gpio/gpio8", "w") as f:#green
+                if self.is_open:
+                    f.write("1")
+                else:
+                    f.write("0")
+
             return {'cmd': {'message': self.open_message()}}
         return None
 
@@ -93,7 +104,7 @@ class LolOpenerIrcBot(object):
  
 if __name__ == '__main__':
     server = "irc.lyonopenlab.net"
-    channel = "#testlol"
+    channel = "#lol"
     botnick = "lolopener"
     bot = PyIrciBot(server, channel, botnick)
     bot.connect(timeout_use_class=True)
