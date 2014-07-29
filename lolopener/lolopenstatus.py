@@ -12,9 +12,9 @@ class LOLOpenStatus(object):
 
     """
     def __init__(self, gpio_file="/sys/class/lol_gpio/gpio4", lock=None):
+        self.lock = lock
         self._gpio_status_file = gpio_file
         self._is_open = self.get_open_status()
-        self.lock = lock
 
     def _lock(self):
         if self.lock:
