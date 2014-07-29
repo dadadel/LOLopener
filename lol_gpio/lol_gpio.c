@@ -2,6 +2,8 @@
  * This Linux kernel module is developed for the LOLOpener project.
  * It provides a way from userland to manage the Raspberry PI BCM2835
  * GPIOs used for the project.
+ * It will export GPIOs 8/11 in output mode to light a red/green LED.
+ * It will export GPIO4 in input mode to manage the open/close swith.
  *
  * This software is distributed under the GPLv3 (http://www.gnu.org/licenses/gpl.txt)
  * and comes without any warranty.
@@ -71,9 +73,7 @@ struct reg_gpio
 
 static struct class_attribute lol_sysfs_class_attrs[] = {
     __ATTR(gpio4, 0666, lol_sysfs_show, lol_sysfs_store),
-    __ATTR(gpio7, 0666, lol_sysfs_show, lol_sysfs_store),
     __ATTR(gpio8, 0666, lol_sysfs_show, lol_sysfs_store),
-    __ATTR(gpio9, 0666, lol_sysfs_show, lol_sysfs_store),
     __ATTR(gpio11, 0666, lol_sysfs_show, lol_sysfs_store),
     __ATTR_NULL
 };
@@ -256,9 +256,7 @@ int lol_gpio_init(void)
     /* Configure the GPIOs directions */
 
     lol_setup_gpio(4, INPUT_MODE);
-    lol_setup_gpio(7, OUTPUT_MODE);
     lol_setup_gpio(8, OUTPUT_MODE);
-    lol_setup_gpio(9, OUTPUT_MODE);
     lol_setup_gpio(11, OUTPUT_MODE);
 
     /* initializes the SYSFS  */
