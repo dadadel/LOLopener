@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 from threading import Thread, Lock
-from lolopenstatus import LOLOpenStatus
-from lolmail import LOLOpenerMail
-from lolirc import LOLOpenerIrcBot
+from lolopener.pyircibot import PyIrciBot
+from lolopener.lolopenstatus import LOLOpenStatus
+from lolopener.lolmail import LOLOpenerMail
+from lolopener.lolirc import LOLOpenerIrcBot
 
 
 def set_led(status):
@@ -21,11 +22,11 @@ def set_led(status):
 
 def launch_ircbot(lolstatus):
     server = "irc.lyonopenlab.net"
-    channel = "#lol"
+    channel = "#testlol"
     botnick = "lolopener"
     bot = PyIrciBot(server, channel, botnick)
     bot.connect(timeout_use_class=True)
-    bot.use_parser_class(LolOpenerIrcBot, lolstatus=lolstatus)
+    bot.use_parser_class(LOLOpenerIrcBot, open_status=lolstatus)
     bot.run()
 
 
@@ -50,9 +51,10 @@ def launch_leds(lolstatus):
 
 end_of_running = False
 
-apps = [{'launch': launch_ircbot, 'thread': None},
+apps = [{'launch': launch_leds, 'thread': None},
+        {'launch': launch_ircbot, 'thread': None},
         {'launch': launch_mailer, 'thread': None},
-        {'launch': launch_leds, 'thread': None},]
+       ]
 
 lolstatus = LOLOpenStatus(lock=Lock())
 
