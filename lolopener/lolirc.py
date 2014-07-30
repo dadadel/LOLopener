@@ -1,8 +1,10 @@
+# -*- encoding: utf8 -*-
+
 from pyircibot import PyIrciBot
 from lolopenstatus import LOLOpenStatus
 
 
-class LolOpenerIrcBot(object):
+class LOLOpenerIrcBot(object):
     '''LOLOpener IRC bot. This class should be provided
     to PyIrciBot (https://github.com/dadadel/pyircibot)
     '''
@@ -79,5 +81,5 @@ if __name__ == '__main__':
     botnick = "lolopener"
     bot = PyIrciBot(server, channel, botnick)
     bot.connect(timeout_use_class=True)
-    bot.use_parser_class(LolOpenerIrcBot)
+    bot.use_parser_class(LOLOpenerIrcBot)
     bot.run()#parse_message=parse_message)
