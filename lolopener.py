@@ -56,9 +56,9 @@ apps = [{'launch': launch_leds, 'thread': None},
         {'launch': launch_mailer, 'thread': None},
        ]
 
-lolstatus = LOLOpenStatus(lock=Lock())
-
+#lolstatus = LOLOpenStatus(lock=Lock())
 for app in apps:
+    lolstatus = LOLOpenStatus()
     app['thread'] = Thread(target=app['launch'], args=(lolstatus,))
 
 for app in apps:
