@@ -9,14 +9,17 @@ class LOLOpenerIrcBot(object):
     to PyIrciBot (https://github.com/dadadel/pyircibot)
     '''
 
-    def __init__(self, nick=None, channel=None, open_status=LOLOpenStatus()):
+    def __init__(self, nick=None, channel=None, open_status=None):
         '''Init the data
 
         '''
         self.channel = channel
         self.nick = nick
         self.open_status = open_status
-        self.is_open = open_status.is_open()
+        if open_status:
+            self.is_open = open_status.is_open()
+        else:
+            self.is_open = False
 
     def set_nick(self, nick):
         '''Sets the nick. This will be called by PyIrciBot to update the nickname.
@@ -43,7 +46,7 @@ class LOLOpenerIrcBot(object):
     def timeout_function(self):
         '''Check the GPIO status to detect Opening change, so inform the chan.
         '''
-        if self.open_status.update():
+        if self.open_status and self.open_status.update():
             self.is_open = self.open_status.is_open()
             return {'cmd': {'message': self.open_message()}}
         return None
@@ -79,7 +82,7 @@ if __name__ == '__main__':
     server = "irc.lyonopenlab.net"
     channel = "#testlol"
     botnick = "lolopener"
-    bot = PyIrciBot(server, channel, botnick)
+    bot = PyIrciBot(server, channel, botnick, port=6697, ssl=True)
     bot.connect(timeout_use_class=True)
     bot.use_parser_class(LOLOpenerIrcBot)
     bot.run()#parse_message=parse_message)
