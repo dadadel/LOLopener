@@ -50,6 +50,7 @@ class LOLOpenStatus(object):
             changed = True
         else:
             changed = False
+        return changed
 
     def wait_change(self):
         """Wait until the open status change and return it.
